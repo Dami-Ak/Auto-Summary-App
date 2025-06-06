@@ -71,16 +71,16 @@ if st.button("Generate Summary"):
         else:
             summary = summarize_text(input_text)
         st.session_state["summary"] = summary
+        st.session_state["analysis"] = analyze_summary(summary)
         st.session_state["styled_summaries"] = []
 
-        with st.expander("📄 Original Summary", expanded=True):
-            st.write(summary)
-
-        analysis = analyze_summary(summary)
-        with st.expander("🧠 Analysis of Messaging, Biases, and Blind Spots", expanded=True):
-            st.write(analysis)
-
 if "summary" in st.session_state and st.session_state["summary"]:
+    with st.expander("📄 Original Summary", expanded=True):
+        st.write(st.session_state["summary"])
+
+    with st.expander("🧠 Analysis of Messaging, Biases, and Blind Spots", expanded=True):
+        st.write(st.session_state["analysis"])
+
     st.markdown("### 🎨 Try Different Summary Styles")
     styles = {
         "Explain Like I'm 5": "Explain this summary like I'm 5 years old",
