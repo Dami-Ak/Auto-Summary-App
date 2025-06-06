@@ -63,7 +63,7 @@ st.write("Paste a URL or article text below and get a quick summary.")
 input_text = st.text_area("Paste article URL or text")
 summary = ""
 
-if st.button("Summarize"):
+if st.button("Generate Summary"):
     with st.spinner("Summarizing..."):
         if input_text.startswith("http"):
             article = fetch_article_text(input_text)
@@ -71,31 +71,32 @@ if st.button("Summarize"):
         else:
             summary = summarize_text(input_text)
         st.session_state["summary"] = summary
-        st.subheader("Original Summary")
-        st.write(summary)
+
+        with st.expander("📄 Original Summary", expanded=True):
+            st.write(summary)
 
         analysis = analyze_summary(summary)
-        st.subheader("🧠 Analysis of Messaging, Biases, and Blind Spots")
-        st.write(analysis)
+        with st.expander("🧠 Analysis of Messaging, Biases, and Blind Spots", expanded=True):
+            st.write(analysis)
 
 if "summary" in st.session_state and st.session_state["summary"]:
-    st.subheader("Try Different Summary Styles")
+    st.markdown("### 🎨 Try Different Summary Styles")
     styles = {
-        "Like I'm 5": "Explain this summary like I'm 5 years old",
+        "Explain Like I'm 5": "Explain this summary like I'm 5 years old",
         "More Detailed": "Make this summary more detailed",
         "Playful": "Rewrite this summary in a playful tone",
-        "Presentation": "Turn this summary into a 5-slide presentation outline"
+        "5-Slide Presentation Outline": "Turn this summary into a 5-slide presentation outline"
     }
 
-    col1, col2, col3, col4 = st.columns(4)
-    buttons = [col1.button("Like I'm 5"), col2.button("More Detailed"), col3.button("Playful"), col4.button("Presentation")]
+    cols = st.columns(len(styles), gap="small")
     labels = list(styles.keys())
 
-    for idx, pressed in enumerate(buttons):
-        if pressed:
-            label = labels[idx]
-            instruction = styles[label]
-            rewritten = rewrite_summary(st.session_state["summary"], instruction)
-            st.markdown(f"**{label} Version:**")
-            st.markdown(f"**Original:**\n{st.session_state['summary']}")
-            st.markdown(f"**Updated:**\n{rewritten}")
+    for idx, label in enumerate(labels):
+        with cols[idx]:
+            if st.button(label):
+                instruction = styles[label]
+                with st.spinner(f"Rewriting summary: {label}..."):
+                    rewritten = rewrite_summary(st.session_state["summary"], instruction)
+                st.markdown(f"**{label}:**")
+                st.markdown(f"**Original:**\n{st.session_state['summary']}")
+                st.markdown(f"**Updated:**\n{rewritten}")
