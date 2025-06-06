@@ -57,6 +57,19 @@ def analyze_summary(summary):
     except Exception as e:
         return f"Error analyzing summary: {e}"
 
+def detect_content_type(text):
+    try:
+        client = openai.OpenAI()
+        prompt = f"Classify the following text into one of the content types: News, Opinion, Research, Blog, or Other. Provide a brief justification for your classification.\n\n{text}"
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.5
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error detecting content type: {e}"
+
 st.title("📝 Auto-Summary Tool")
 st.write("Paste a URL or article text below and get a quick summary.")
 
@@ -68,15 +81,21 @@ if st.button("Generate Summary"):
         if input_text.startswith("http"):
             article = fetch_article_text(input_text)
             summary = summarize_text(article)
+            content_type = detect_content_type(article)
         else:
             summary = summarize_text(input_text)
+            content_type = detect_content_type(input_text)
         st.session_state["summary"] = summary
         st.session_state["analysis"] = analyze_summary(summary)
+        st.session_state["content_type"] = content_type
         st.session_state["styled_summaries"] = []
 
 if "summary" in st.session_state and st.session_state["summary"]:
     with st.expander("📄 Original Summary", expanded=True):
         st.write(st.session_state["summary"])
+
+    with st.expander("📚 Detected Content Type", expanded=True):
+        st.write(st.session_state["content_type"])
 
     with st.expander("🧠 Analysis of Messaging, Biases, and Blind Spots", expanded=True):
         st.write(st.session_state["analysis"])
