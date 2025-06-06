@@ -71,6 +71,7 @@ if st.button("Generate Summary"):
         else:
             summary = summarize_text(input_text)
         st.session_state["summary"] = summary
+        st.session_state["styled_summaries"] = []
 
         with st.expander("📄 Original Summary", expanded=True):
             st.write(summary)
@@ -88,15 +89,16 @@ if "summary" in st.session_state and st.session_state["summary"]:
         "5-Slide Presentation Outline": "Turn this summary into a 5-slide presentation outline"
     }
 
-    cols = st.columns(len(styles), gap="small")
-    labels = list(styles.keys())
+    for label, instruction in styles.items():
+        if st.button(label):
+            with st.spinner(f"Rewriting summary: {label}..."):
+                rewritten = rewrite_summary(st.session_state["summary"], instruction)
+            if "styled_summaries" not in st.session_state:
+                st.session_state["styled_summaries"] = []
+            st.session_state["styled_summaries"].append((label, rewritten))
 
-    for idx, label in enumerate(labels):
-        with cols[idx]:
-            if st.button(label):
-                instruction = styles[label]
-                with st.spinner(f"Rewriting summary: {label}..."):
-                    rewritten = rewrite_summary(st.session_state["summary"], instruction)
+    if st.session_state.get("styled_summaries"):
+        with st.expander("✨ Styled Summaries", expanded=True):
+            for label, rewritten in st.session_state["styled_summaries"]:
                 st.markdown(f"**{label}:**")
-                st.markdown(f"**Original:**\n{st.session_state['summary']}")
-                st.markdown(f"**Updated:**\n{rewritten}")
+                st.markdown(rewritten)
