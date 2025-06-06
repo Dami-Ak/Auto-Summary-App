@@ -2,11 +2,10 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import openai
-
-# Set your OpenAI key here or load it securely
 import os
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
+# Set your OpenAI key securely from Streamlit secrets or environment
+openai.api_key = os.getenv("OPENAI_API_KEY", "")
 
 def fetch_article_text(url):
     try:
@@ -21,8 +20,9 @@ def fetch_article_text(url):
 
 def summarize_text(text):
     try:
+        client = openai.OpenAI()
         prompt = f"Summarize the following text clearly and concisely:\n\n{text}"
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7
