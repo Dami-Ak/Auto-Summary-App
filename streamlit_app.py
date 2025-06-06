@@ -31,10 +31,24 @@ def summarize_text(text):
     except Exception as e:
         return f"Error summarizing text: {e}"
 
+def rewrite_summary(summary, instruction):
+    try:
+        client = openai.OpenAI()
+        prompt = f"{instruction}:\n\n{summary}"
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error rewriting summary: {e}"
+
 st.title("📝 Auto-Summary Tool")
 st.write("Paste a URL or article text below and get a quick summary.")
 
 input_text = st.text_area("Paste article URL or text")
+summary = ""
 
 if st.button("Summarize"):
     with st.spinner("Summarizing..."):
@@ -43,5 +57,22 @@ if st.button("Summarize"):
             summary = summarize_text(article)
         else:
             summary = summarize_text(input_text)
-        st.subheader("Summary")
+        st.session_state["summary"] = summary
+        st.subheader("Original Summary")
         st.write(summary)
+
+if "summary" in st.session_state and st.session_state["summary"]:
+    st.subheader("Try Different Summary Styles")
+    styles = {
+        "Like I'm 5": "Explain this summary like I'm 5 years old",
+        "More Detailed": "Make this summary more detailed",
+        "Playful": "Rewrite this summary in a playful tone",
+        "Presentation": "Turn this summary into a 5-slide presentation outline"
+    }
+
+    for label, instruction in styles.items():
+        if st.button(label):
+            rewritten = rewrite_summary(st.session_state["summary"], instruction)
+            st.markdown(f"**{label} Version:**")
+            st.markdown(f"**Original:**\n{st.session_state['summary']}")
+            st.markdown(f"**Updated:**\n{rewritten}")
