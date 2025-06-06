@@ -93,12 +93,10 @@ if "summary" in st.session_state and st.session_state["summary"]:
         if st.button(label):
             with st.spinner(f"Rewriting summary: {label}..."):
                 rewritten = rewrite_summary(st.session_state["summary"], instruction)
-            if "styled_summaries" not in st.session_state:
-                st.session_state["styled_summaries"] = []
-            st.session_state["styled_summaries"].append((label, rewritten))
+            st.session_state["last_style"] = (label, rewritten)
 
-    if st.session_state.get("styled_summaries"):
-        with st.expander("✨ Styled Summaries", expanded=True):
-            for label, rewritten in st.session_state["styled_summaries"]:
-                st.markdown(f"**{label}:**")
-                st.markdown(rewritten)
+    if "last_style" in st.session_state:
+        label, rewritten = st.session_state["last_style"]
+        with st.expander("✨ Styled Summary", expanded=True):
+            st.markdown(f"**{label}:**")
+            st.markdown(rewritten)
